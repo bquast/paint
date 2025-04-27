@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Image File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.png</string>
+				<string>public.jpeg</string>
+				<string>com.microsoft.bmp</string>
+				<string>public.tiff</string>
+				<string>com.compuserve.gif</string>
+			</array>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>png</string>
+				<string>jpg</string>
+				<string>jpeg</string>
+				<string>bmp</string>
+				<string>tif</string>
+				<string>tiff</string>
+				<string>gif</string>
+			</array>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+	</array>
+</dict>
+</plist>
