@@ -3,6 +3,7 @@
 typedef NS_ENUM(NSInteger, PaintTool) {
     PaintToolPencil,
     PaintToolRectSelect,
+    PaintToolText,     // Add text tool
     // Add more tools here later
 };
 

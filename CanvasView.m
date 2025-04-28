@@ -14,6 +14,10 @@
         _hasSelection = NO;
         _isDraggingSelection = NO;
         _dragOffset = NSZeroPoint;
+        _textFont = [NSFont systemFontOfSize:12.0];
+        _currentText = @"";
+        _isEditingText = NO;
+        [self setAcceptsTouchEvents:YES];
     }
     return self;
 }
@@ -104,6 +108,15 @@
         [[NSColor blackColor] set];
         [rectPath stroke];
     }
+
+    // Draw current text if editing
+    if (self.isEditingText && self.currentText) {
+        NSDictionary *attrs = @{
+            NSFontAttributeName: self.textFont,
+            NSForegroundColorAttributeName: self.drawingColor
+        };
+        [self.currentText drawAtPoint:self.textPosition withAttributes:attrs];
+    }
 }
 
 // Override isFlipped to make the coordinate system start at the top-left,
@@ -128,6 +141,11 @@
 
 - (void)mouseDown:(NSEvent *)event {
     NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
+    
+    // If we're editing text and click elsewhere, commit it first
+    if (self.isEditingText) {
+        [self commitText];
+    }
     
     // Check if we clicked inside an existing selection
     if (self.hasSelection && NSPointInRect(point, self.selectionRect)) {
@@ -158,6 +176,17 @@
             [self.currentStroke addObject:[NSValue valueWithPoint:point]];
             [self.currentStroke addObject:[NSValue valueWithPoint:point]]; // Add twice for rect
             break;
+            
+        case PaintToolText: {
+            if ([self isPointInCanvas:point]) {
+                self.textPosition = point;
+                self.isEditingText = YES;
+                self.currentText = @"";
+                [self setNeedsDisplay:YES];
+                [[self window] makeFirstResponder:self];
+            }
+            break;
+        }
     }
     [self setNeedsDisplay:YES];
 }
@@ -384,6 +413,51 @@
     self.image = newImage;
     self.hasSelection = NO;
     self.selectionImage = NULL;
+    [self setNeedsDisplay:YES];
+}
+
+- (BOOL)acceptsFirstResponder {
+    return YES;
+}
+
+- (void)keyDown:(NSEvent *)event {
+    if (self.currentTool == PaintToolText && self.isEditingText) {
+        if (event.keyCode == 36) { // Return key
+            [self commitText];
+        } else {
+            self.currentText = [self.currentText stringByAppendingString:event.characters];
+            [self setNeedsDisplay:YES];
+        }
+    }
+}
+
+- (void)commitText {
+    if (self.currentText.length == 0) {
+        self.isEditingText = NO;
+        return;
+    }
+    
+    NSImage *newImage = [[NSImage alloc] initWithSize:self.bounds.size];
+    [newImage lockFocus];
+    
+    // Draw existing image
+    if (self.image) {
+        [self.image drawInRect:self.bounds];
+    }
+    
+    // Draw the text
+    NSDictionary *attrs = @{
+        NSFontAttributeName: self.textFont,
+        NSForegroundColorAttributeName: self.drawingColor
+    };
+    [self.currentText drawAtPoint:self.textPosition withAttributes:attrs];
+    
+    [newImage unlockFocus];
+    
+    // Update the main image
+    self.image = newImage;
+    self.isEditingText = NO;
+    self.currentText = @"";
     [self setNeedsDisplay:YES];
 }
 

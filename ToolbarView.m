@@ -30,6 +30,12 @@
                                                           tag:1];
     [buttons addObject:rectSelectButton];
     
+    // Text Tool Button
+    NSButton *textButton = [self createToolButtonWithTitle:@"A" 
+                                                toolType:PaintToolText 
+                                                    tag:2];
+    [buttons addObject:textButton];
+    
     self.toolButtons = buttons;
     
     // Set initial state

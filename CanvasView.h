@@ -17,6 +17,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign) BOOL hasSelection;        // Track if we have an active selection
 @property (assign) BOOL isDraggingSelection;  // Track if we're moving the selection
 @property (assign) NSPoint dragOffset;        // Store where in the selection we clicked
+@property (strong) NSString *currentText;        // Text being edited
+@property (assign) NSPoint textPosition;         // Where text will be drawn
+@property (assign) BOOL isEditingText;           // Track if we're editing text
+@property (strong) NSFont *textFont;             // Font for text tool
 
 - (void)commitCurrentStroke;  // Method to apply the current stroke to the image
 
