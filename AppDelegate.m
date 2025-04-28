@@ -3,6 +3,7 @@
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h> // Import modern UTIs
 #import "CanvasView.h"
 #import "ToolbarView.h"
+#import "ColorBarView.h"
 
 // Define keys for UserDefaults (if any needed later)
 // static NSString * const kSomeImageSettingKey = @"someImageSetting";
@@ -12,6 +13,7 @@
 // Private property to hold the main application window.
 @property (strong) NSWindow *window;
 @property (strong) CanvasView *canvasView;  // Change from NSImageView to CanvasView
+@property (strong) ColorBarView *colorBarView;
 @end
 
 @implementation AppDelegate
@@ -44,6 +46,20 @@
     self.canvasView = [[CanvasView alloc] initWithFrame:canvasFrame];
     [self.canvasView setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
     [self.window.contentView addSubview:self.canvasView];
+
+    // Create color bar
+    NSRect colorBarFrame = NSMakeRect(0, 0, NSWidth(self.window.contentView.bounds), 30);
+    self.colorBarView = [[ColorBarView alloc] initWithFrame:colorBarFrame];
+    self.colorBarView.delegate = self.canvasView;
+    self.colorBarView.autoresizingMask = NSViewWidthSizable | NSViewMaxYMargin;
+    
+    // Adjust canvas frame to make room for color bar
+    NSRect newCanvasFrame = self.canvasView.frame;
+    newCanvasFrame.size.height -= colorBarFrame.size.height;
+    self.canvasView.frame = newCanvasFrame;
+    
+    // Add color bar to window
+    [self.window.contentView addSubview:self.colorBarView];
 
     // --- Menu Setup ---
     [self createMainMenu]; // Create the application menu

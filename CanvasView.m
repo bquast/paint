@@ -110,12 +110,48 @@
     }
 
     // Draw current text if editing
-    if (self.isEditingText && self.currentText) {
+    if (self.isEditingText) {
+        // Create attributes dictionary
         NSDictionary *attrs = @{
             NSFontAttributeName: self.textFont,
             NSForegroundColorAttributeName: self.drawingColor
         };
+        
+        // Calculate text bounds
+        NSRect textBounds;
+        if (self.currentText.length > 0) {
+            NSSize maxSize = NSMakeSize(self.bounds.size.width - self.textPosition.x, 
+                                      self.bounds.size.height - self.textPosition.y);
+            textBounds = [self.currentText boundingRectWithSize:maxSize
+                                                      options:NSStringDrawingUsesLineFragmentOrigin
+                                                   attributes:attrs];
+            textBounds.origin = self.textPosition;
+            // Add some padding
+            textBounds = NSInsetRect(textBounds, -2, -2);
+        } else {
+            // Default size for empty text
+            textBounds = NSMakeRect(self.textPosition.x - 2, 
+                                  self.textPosition.y - 2,
+                                  100, // Default width
+                                  self.textFont.pointSize + 4); // Height based on font
+        }
+        
+        // Draw dashed boundary box
+        NSBezierPath *boundaryPath = [NSBezierPath bezierPathWithRect:textBounds];
+        CGFloat pattern[2] = {2, 2}; // Dash pattern: 2 units on, 2 units off
+        [boundaryPath setLineDash:pattern count:2 phase:0.0];
+        [[NSColor grayColor] set];
+        [boundaryPath stroke];
+        
+        // Draw the text
         [self.currentText drawAtPoint:self.textPosition withAttributes:attrs];
+        
+        // Draw cursor if no text
+        if (self.currentText.length == 0) {
+            [[NSColor blackColor] set];
+            NSRectFill(NSMakeRect(self.textPosition.x, self.textPosition.y, 
+                                 1, self.textFont.pointSize));
+        }
     }
 }
 
@@ -459,6 +495,10 @@
     self.isEditingText = NO;
     self.currentText = @"";
     [self setNeedsDisplay:YES];
+}
+
+- (void)colorSelected:(NSColor *)color {
+    self.drawingColor = color;
 }
 
 @end 

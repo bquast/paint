@@ -11,6 +11,7 @@
 		54A38B132DB79CEC008119EC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 54A38B122DB79CEC008119EC /* AppDelegate.m */; };
 		54A38B182DB79CED008119EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 54A38B172DB79CED008119EC /* Assets.xcassets */; };
 		54A38B1D2DB79CED008119EC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 54A38B1C2DB79CED008119EC /* main.m */; };
+		54C5E73A2DBFE34700992699 /* ColorBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C5E7392DBFE34700992699 /* ColorBarView.m */; };
 		54E9A1E12DBF7387002E3A97 /* CanvasView.m in Sources */ = {isa = PBXBuildFile; fileRef = 54E9A1E02DBF7387002E3A97 /* CanvasView.m */; };
 		54F549442DBF77FB00C04D1E /* ToolbarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 54F549432DBF77FB00C04D1E /* ToolbarView.m */; };
 /* End PBXBuildFile section */
@@ -23,6 +24,8 @@
 		54A38B172DB79CED008119EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		54A38B1C2DB79CED008119EC /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		54A38B1E2DB79CED008119EC /* paint.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = paint.entitlements; sourceTree = "<group>"; };
+		54C5E7382DBFE34700992699 /* ColorBarView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ColorBarView.h; sourceTree = "<group>"; };
+		54C5E7392DBFE34700992699 /* ColorBarView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ColorBarView.m; sourceTree = "<group>"; };
 		54E9A1DF2DBF7387002E3A97 /* CanvasView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CanvasView.h; sourceTree = "<group>"; };
 		54E9A1E02DBF7387002E3A97 /* CanvasView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CanvasView.m; sourceTree = "<group>"; };
 		54F549422DBF77FB00C04D1E /* ToolbarView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ToolbarView.h; sourceTree = "<group>"; };
@@ -54,6 +57,8 @@
 				541B9FBE2DBE279F001D2D91 /* paint.app */,
 				54F549422DBF77FB00C04D1E /* ToolbarView.h */,
 				54F549432DBF77FB00C04D1E /* ToolbarView.m */,
+				54C5E7382DBFE34700992699 /* ColorBarView.h */,
+				54C5E7392DBFE34700992699 /* ColorBarView.m */,
 			);
 			sourceTree = "<group>";
 		};
@@ -132,6 +137,7 @@
 				54A38B132DB79CEC008119EC /* AppDelegate.m in Sources */,
 				54F549442DBF77FB00C04D1E /* ToolbarView.m in Sources */,
 				54E9A1E12DBF7387002E3A97 /* CanvasView.m in Sources */,
+				54C5E73A2DBFE34700992699 /* ColorBarView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
