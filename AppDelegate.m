@@ -2,6 +2,7 @@
 #import "AppDelegate.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h> // Import modern UTIs
 #import "CanvasView.h"
+#import "ToolbarView.h"
 
 // Define keys for UserDefaults (if any needed later)
 // static NSString * const kSomeImageSettingKey = @"someImageSetting";
@@ -29,8 +30,17 @@
     self.window.identifier = @"paintMainWindow"; // Changed identifier
     [self.window setRestorationClass:[self class]];
 
-    // --- CanvasView Setup ---
-    self.canvasView = [[CanvasView alloc] initWithFrame:self.window.contentView.bounds];
+    // Create toolbar view (fixed width, full height)
+    NSRect toolbarFrame = NSMakeRect(0, 0, 40, self.window.contentView.bounds.size.height);
+    ToolbarView *toolbarView = [[ToolbarView alloc] initWithFrame:toolbarFrame];
+    [toolbarView setAutoresizingMask:NSViewHeightSizable];
+    [self.window.contentView addSubview:toolbarView];
+
+    // Adjust canvas view frame to account for toolbar
+    NSRect canvasFrame = self.window.contentView.bounds;
+    canvasFrame.origin.x = NSMaxX(toolbarFrame);
+    canvasFrame.size.width -= NSWidth(toolbarFrame);
+    self.canvasView = [[CanvasView alloc] initWithFrame:canvasFrame];
     [self.canvasView setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
     [self.window.contentView addSubview:self.canvasView];
 
@@ -48,6 +58,9 @@
     //     NSImage *image = [[NSImage alloc] initWithData:imageData];
     //     self.imageView.image = image;
     // }
+
+    // Add to applicationDidFinishLaunching after creating toolbarView:
+    toolbarView.delegate = self;
 }
 
 // Creates the main application menu.
@@ -322,6 +335,14 @@
     }
 }
 
+// Add delegate method:
+- (void)toolbarView:(id)toolbarView didSelectTool:(PaintTool)tool {
+    // For now, just log the tool change
+    NSLog(@"Selected tool: %ld", (long)tool);
+    
+    // Later we'll update the CanvasView to handle different tools
+    // self.canvasView.currentTool = tool;
+}
 
 @end
 

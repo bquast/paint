@@ -1,9 +1,18 @@
 #import <Cocoa/Cocoa.h>
 
-NS_ASSUME_NONNULL_BEGIN
+typedef NS_ENUM(NSInteger, PaintTool) {
+    PaintToolPencil,
+    PaintToolRectSelect,
+    // Add more tools here later
+};
+
+@protocol ToolbarViewDelegate <NSObject>
+- (void)toolbarView:(id)toolbarView didSelectTool:(PaintTool)tool;
+@end
 
 @interface ToolbarView : NSView
 
-@end
+@property (weak) id<ToolbarViewDelegate> delegate;
+@property (assign) PaintTool selectedTool;
 
-NS_ASSUME_NONNULL_END 
+@end 
