@@ -7,7 +7,7 @@
 @interface ColorBarView : NSView
 
 @property (weak) id<ColorBarDelegate> delegate;
-@property (strong) NSArray<NSColor *> *colors;
+@property (strong) NSArray<NSArray<NSColor *> *> *colors;
 @property (strong) NSColor *selectedColor;
 
 @end 

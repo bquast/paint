@@ -47,8 +47,8 @@
     [self.canvasView setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
     [self.window.contentView addSubview:self.canvasView];
 
-    // Create color bar
-    NSRect colorBarFrame = NSMakeRect(0, 0, NSWidth(self.window.contentView.bounds), 30);
+    // Create color bar with double height
+    NSRect colorBarFrame = NSMakeRect(0, 0, NSWidth(self.window.contentView.bounds), 50); // Made taller
     self.colorBarView = [[ColorBarView alloc] initWithFrame:colorBarFrame];
     self.colorBarView.delegate = self.canvasView;
     self.colorBarView.autoresizingMask = NSViewWidthSizable | NSViewMaxYMargin;
