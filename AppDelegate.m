@@ -106,10 +106,10 @@
     [mainMenu addItem:editMenuItem];
     NSMenu *editMenu = [[NSMenu alloc] initWithTitle:@"Edit"];
     editMenuItem.submenu = editMenu;
-    [editMenu addItemWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"];               // Placeholder
-    [editMenu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];              // Placeholder
-    [editMenu addItemWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"];            // Placeholder
-    [editMenu addItemWithTitle:@"Delete" action:@selector(delete:) keyEquivalent:@""];          // Placeholder
+    [editMenu addItemWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"];
+    [editMenu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];
+    [editMenu addItemWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"];
+    [editMenu addItemWithTitle:@"Delete" action:@selector(delete:) keyEquivalent:@"\177"];
     [editMenu addItemWithTitle:@"Select All" action:@selector(selectAll:) keyEquivalent:@"a"]; // Placeholder
 
 
