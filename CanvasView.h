@@ -1,4 +1,5 @@
 #import <Cocoa/Cocoa.h>
+#import "ToolbarView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -10,6 +11,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign) BOOL isDrawing;                // Track if we're in the middle of drawing
 @property (strong) NSColor *drawingColor;         // Current drawing color (default black)
 @property (assign) CGFloat lineWidth;             // Width of the pencil line
+@property (assign) PaintTool currentTool;  // Add this property
+@property (assign) NSRect selectionRect;     // Store the current selection rectangle
+@property (strong) NSImage *selectionImage;  // Store the selected portion of the image
+@property (assign) BOOL hasSelection;        // Track if we have an active selection
 
 - (void)commitCurrentStroke;  // Method to apply the current stroke to the image
 

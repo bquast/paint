@@ -34,6 +34,7 @@
     NSRect toolbarFrame = NSMakeRect(0, 0, 40, self.window.contentView.bounds.size.height);
     ToolbarView *toolbarView = [[ToolbarView alloc] initWithFrame:toolbarFrame];
     [toolbarView setAutoresizingMask:NSViewHeightSizable];
+    toolbarView.delegate = self;
     [self.window.contentView addSubview:toolbarView];
 
     // Adjust canvas view frame to account for toolbar
@@ -337,11 +338,8 @@
 
 // Add delegate method:
 - (void)toolbarView:(id)toolbarView didSelectTool:(PaintTool)tool {
-    // For now, just log the tool change
     NSLog(@"Selected tool: %ld", (long)tool);
-    
-    // Later we'll update the CanvasView to handle different tools
-    // self.canvasView.currentTool = tool;
+    self.canvasView.currentTool = tool;  // Actually set the tool on the canvas
 }
 
 @end

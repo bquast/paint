@@ -9,6 +9,9 @@
         _drawingColor = [NSColor blackColor];
         _lineWidth = 1.0;
         _isDrawing = NO;
+        _selectionRect = NSZeroRect;
+        _selectionImage = nil;
+        _hasSelection = NO;
     }
     return self;
 }
@@ -33,21 +36,57 @@
     
     // Draw the current stroke if we're in the middle of drawing
     if (self.isDrawing && self.currentStroke.count > 0) {
-        NSBezierPath *strokePath = [NSBezierPath bezierPath];
-        NSPoint firstPoint = [[self.currentStroke firstObject] pointValue];
-        [strokePath moveToPoint:firstPoint];
-        
-        for (NSValue *pointValue in self.currentStroke) {
-            NSPoint point = [pointValue pointValue];
-            [strokePath lineToPoint:point];
+        switch (self.currentTool) {
+            case PaintToolPencil: {
+                NSBezierPath *strokePath = [NSBezierPath bezierPath];
+                NSPoint firstPoint = [[self.currentStroke firstObject] pointValue];
+                [strokePath moveToPoint:firstPoint];
+                
+                for (NSValue *pointValue in self.currentStroke) {
+                    NSPoint point = [pointValue pointValue];
+                    [strokePath lineToPoint:point];
+                }
+                
+                [strokePath setLineWidth:self.lineWidth];
+                [self.drawingColor set];
+                [strokePath stroke];
+                break;
+            }
+                
+            case PaintToolRectSelect: {
+                if (self.currentStroke.count == 2) {
+                    NSPoint start = [[self.currentStroke objectAtIndex:0] pointValue];
+                    NSPoint end = [[self.currentStroke objectAtIndex:1] pointValue];
+                    
+                    // Create rect from two points
+                    NSRect selectionRect = NSMakeRect(
+                        MIN(start.x, end.x),
+                        MIN(start.y, end.y),
+                        fabs(end.x - start.x),
+                        fabs(end.y - start.y)
+                    );
+                    
+                    // Draw dashed rectangle
+                    NSBezierPath *rectPath = [NSBezierPath bezierPathWithRect:selectionRect];
+                    CGFloat pattern[2] = {4.0, 4.0};
+                    [rectPath setLineDash:pattern count:2 phase:0.0];
+                    [[NSColor blackColor] set];
+                    [rectPath stroke];
+                }
+                break;
+            }
         }
-        
-        [strokePath setLineWidth:self.lineWidth];
-        [self.drawingColor set];
-        [strokePath stroke];
     }
 
-    // Drawing code for tools (selection, lines, etc.) will go here later
+    // Draw the active selection if we have one
+    if (self.hasSelection && !self.isDrawing) {
+        // Draw the selection rectangle
+        NSBezierPath *rectPath = [NSBezierPath bezierPathWithRect:self.selectionRect];
+        CGFloat pattern[2] = {4.0, 4.0};
+        [rectPath setLineDash:pattern count:2 phase:0.0];
+        [[NSColor blackColor] set];
+        [rectPath stroke];
+    }
 }
 
 // Override isFlipped to make the coordinate system start at the top-left,
@@ -67,11 +106,22 @@
 }
 
 - (void)mouseDown:(NSEvent *)event {
-    self.isDrawing = YES;
-    [self.currentStroke removeAllObjects];
-    
     NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
-    [self.currentStroke addObject:[NSValue valueWithPoint:point]];
+    
+    switch (self.currentTool) {
+        case PaintToolPencil:
+            self.isDrawing = YES;
+            [self.currentStroke removeAllObjects];
+            [self.currentStroke addObject:[NSValue valueWithPoint:point]];
+            break;
+            
+        case PaintToolRectSelect:
+            self.isDrawing = YES;
+            [self.currentStroke removeAllObjects];
+            [self.currentStroke addObject:[NSValue valueWithPoint:point]];
+            [self.currentStroke addObject:[NSValue valueWithPoint:point]]; // Add twice for rect
+            break;
+    }
     [self setNeedsDisplay:YES];
 }
 
@@ -79,7 +129,17 @@
     if (!self.isDrawing) return;
     
     NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
-    [self.currentStroke addObject:[NSValue valueWithPoint:point]];
+    
+    switch (self.currentTool) {
+        case PaintToolPencil:
+            [self.currentStroke addObject:[NSValue valueWithPoint:point]];
+            break;
+            
+        case PaintToolRectSelect:
+            // Update the second point (maintaining the first point)
+            [self.currentStroke replaceObjectAtIndex:1 withObject:[NSValue valueWithPoint:point]];
+            break;
+    }
     [self setNeedsDisplay:YES];
 }
 
@@ -87,8 +147,44 @@
     if (!self.isDrawing) return;
     
     NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
-    [self.currentStroke addObject:[NSValue valueWithPoint:point]];
-    [self commitCurrentStroke];
+    
+    switch (self.currentTool) {
+        case PaintToolPencil:
+            [self.currentStroke addObject:[NSValue valueWithPoint:point]];
+            [self commitCurrentStroke];
+            break;
+            
+        case PaintToolRectSelect: {
+            // Calculate final selection rectangle
+            NSPoint start = [[self.currentStroke objectAtIndex:0] pointValue];
+            NSPoint end = [[self.currentStroke objectAtIndex:1] pointValue];
+            
+            self.selectionRect = NSMakeRect(
+                MIN(start.x, end.x),
+                MIN(start.y, end.y),
+                fabs(end.x - start.x),
+                fabs(end.y - start.y)
+            );
+            
+            // Create image from selection area
+            if (self.image && !NSIsEmptyRect(self.selectionRect)) {
+                NSImage *newSelectionImage = [[NSImage alloc] initWithSize:self.selectionRect.size];
+                [newSelectionImage lockFocus];
+                
+                // Calculate source rect in image coordinates
+                NSRect sourceRect = self.selectionRect;
+                [self.image drawInRect:NSMakeRect(0, 0, self.selectionRect.size.width, self.selectionRect.size.height)
+                            fromRect:sourceRect
+                            operation:NSCompositingOperationSourceOver
+                            fraction:1.0];
+                
+                [newSelectionImage unlockFocus];
+                self.selectionImage = newSelectionImage;
+                self.hasSelection = YES;
+            }
+            break;
+        }
+    }
     
     self.isDrawing = NO;
     [self setNeedsDisplay:YES];
