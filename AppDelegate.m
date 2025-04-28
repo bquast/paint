@@ -1,6 +1,7 @@
 // AppDelegate.m
 #import "AppDelegate.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h> // Import modern UTIs
+#import "CanvasView.h"
 
 // Define keys for UserDefaults (if any needed later)
 // static NSString * const kSomeImageSettingKey = @"someImageSetting";
@@ -9,6 +10,7 @@
 @interface AppDelegate ()
 // Private property to hold the main application window.
 @property (strong) NSWindow *window;
+@property (strong) CanvasView *canvasView;  // Change from NSImageView to CanvasView
 @end
 
 @implementation AppDelegate
@@ -27,14 +29,10 @@
     self.window.identifier = @"paintMainWindow"; // Changed identifier
     [self.window setRestorationClass:[self class]];
 
-    // --- ImageView Setup ---
-    // Frame takes up the entire content view initially
-    self.imageView = [[NSImageView alloc] initWithFrame:self.window.contentView.bounds];
-    [self.imageView setImageScaling:NSImageScaleProportionallyUpOrDown]; // Scale image nicely
-    [self.imageView setEditable:NO]; // For now, just display
-    [self.imageView setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)]; // Resize with window
-    // Add image view to the window's content view
-    [self.window.contentView addSubview:self.imageView];
+    // --- CanvasView Setup ---
+    self.canvasView = [[CanvasView alloc] initWithFrame:self.window.contentView.bounds];
+    [self.canvasView setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
+    [self.window.contentView addSubview:self.canvasView];
 
     // --- Menu Setup ---
     [self createMainMenu]; // Create the application menu
@@ -188,7 +186,7 @@
 - (IBAction)newDocument:(id)sender {
     // TODO: Implement creating a new blank canvas (e.g., a white NSImage)
     NSLog(@"Placeholder: New Document");
-     self.imageView.image = nil; // Clear current image for now
+     self.canvasView.image = nil; // Clear current image for now
      self.currentFileURL = nil;
      [self.window setTitle:@"Paint - Untitled"];
      self.window.representedURL = nil;
@@ -204,9 +202,9 @@
 - (void)loadImageFromURL:(NSURL *)fileURL {
     NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
     if (image) {
-        self.imageView.image = image;
+        self.canvasView.image = image;  // Update to use canvasView
         self.currentFileURL = fileURL;
-        self.window.representedURL = fileURL; // Show proxy icon in title bar
+        self.window.representedURL = fileURL;
         [self.window setTitleWithRepresentedFilename:fileURL.lastPathComponent];
     } else {
         // Handle error loading image
@@ -293,7 +291,7 @@
 - (void)window:(NSWindow *)window didDecodeRestorableState:(NSCoder *)state {
      // This might be called *after* applicationDidFinishLaunching
      // Check if image already loaded to avoid double-loading
-     if (!self.imageView.image) {
+     if (!self.canvasView.image) {
           NSURL *fileURL = [state decodeObjectOfClass:[NSURL class] forKey:@"imageFileURL"];
           if (fileURL) {
               [self loadImageFromURL:fileURL];

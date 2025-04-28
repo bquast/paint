@@ -11,6 +11,7 @@
 		54A38B132DB79CEC008119EC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 54A38B122DB79CEC008119EC /* AppDelegate.m */; };
 		54A38B182DB79CED008119EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 54A38B172DB79CED008119EC /* Assets.xcassets */; };
 		54A38B1D2DB79CED008119EC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 54A38B1C2DB79CED008119EC /* main.m */; };
+		54E9A1E12DBF7387002E3A97 /* CanvasView.m in Sources */ = {isa = PBXBuildFile; fileRef = 54E9A1E02DBF7387002E3A97 /* CanvasView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,8 @@
 		54A38B172DB79CED008119EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		54A38B1C2DB79CED008119EC /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		54A38B1E2DB79CED008119EC /* paint.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = paint.entitlements; sourceTree = "<group>"; };
+		54E9A1DF2DBF7387002E3A97 /* CanvasView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CanvasView.h; sourceTree = "<group>"; };
+		54E9A1E02DBF7387002E3A97 /* CanvasView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CanvasView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,6 +40,8 @@
 		54A38B052DB79CEC008119EC = {
 			isa = PBXGroup;
 			children = (
+				54E9A1DF2DBF7387002E3A97 /* CanvasView.h */,
+				54E9A1E02DBF7387002E3A97 /* CanvasView.m */,
 				541B9FBF2DBE281E001D2D91 /* Info.plist */,
 				54A38B112DB79CEC008119EC /* AppDelegate.h */,
 				54A38B122DB79CEC008119EC /* AppDelegate.m */,
@@ -120,6 +125,7 @@
 			files = (
 				54A38B1D2DB79CED008119EC /* main.m in Sources */,
 				54A38B132DB79CEC008119EC /* AppDelegate.m in Sources */,
+				54E9A1E12DBF7387002E3A97 /* CanvasView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,7 +273,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Valiq-Security.paint;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Valiq-Security.paint";
 				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
