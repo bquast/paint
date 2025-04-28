@@ -41,12 +41,20 @@
         switch (self.currentTool) {
             case PaintToolPencil: {
                 NSBezierPath *strokePath = [NSBezierPath bezierPath];
-                NSPoint firstPoint = [[self.currentStroke firstObject] pointValue];
-                [strokePath moveToPoint:firstPoint];
+                BOOL hasStarted = NO;
                 
                 for (NSValue *pointValue in self.currentStroke) {
                     NSPoint point = [pointValue pointValue];
-                    [strokePath lineToPoint:point];
+                    
+                    // Only draw points that are within the canvas
+                    if ([self isPointInCanvas:point]) {
+                        if (!hasStarted) {
+                            [strokePath moveToPoint:point];
+                            hasStarted = YES;
+                        } else {
+                            [strokePath lineToPoint:point];
+                        }
+                    }
                 }
                 
                 [strokePath setLineWidth:self.lineWidth];
@@ -112,6 +120,10 @@
         // Mark the entire view as needing to be redrawn.
         [self setNeedsDisplay:YES];
     }
+}
+
+- (BOOL)isPointInCanvas:(NSPoint)point {
+    return NSPointInRect(point, self.bounds);
 }
 
 - (void)mouseDown:(NSEvent *)event {
