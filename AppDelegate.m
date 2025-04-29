@@ -178,33 +178,22 @@
     }
     
     NSSavePanel *savePanel = [NSSavePanel savePanel];
-    savePanel.allowedContentTypes = @[UTTypeJPEG, UTTypePNG];
+    savePanel.allowedContentTypes = @[UTTypePNG];
     savePanel.allowsOtherFileTypes = NO;
     savePanel.canCreateDirectories = YES;
     savePanel.title = @"Save Image";
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result) {
         if (result == NSModalResponseOK) {
-            NSURL *fileURL = savePanel.URL;
-            NSString *pathExtension = fileURL.pathExtension.lowercaseString;
-            
-            // Get image data based on file type
-            NSData *imageData;
-            if ([pathExtension isEqualToString:@"jpg"] || 
-                [pathExtension isEqualToString:@"jpeg"]) {
-                imageData = [self.canvasView.image TIFFRepresentation];
-                NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:imageData];
-                imageData = [imageRep representationUsingType:NSBitmapImageFileTypeJPEG properties:@{}];
-            } else {
-                imageData = [self.canvasView.image TIFFRepresentation];
-                NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:imageData];
-                imageData = [imageRep representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
-            }
+            // Convert to PNG data
+            NSData *imageData = [self.canvasView.image TIFFRepresentation];
+            NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:imageData];
+            NSData *pngData = [imageRep representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
             
             // Write to file
-            if (imageData) {
+            if (pngData) {
                 NSError *error = nil;
-                if (![imageData writeToURL:fileURL options:NSDataWritingAtomic error:&error]) {
+                if (![pngData writeToURL:savePanel.URL options:NSDataWritingAtomic error:&error]) {
                     NSAlert *alert = [[NSAlert alloc] init];
                     alert.messageText = @"Save Failed";
                     alert.informativeText = error.localizedDescription;

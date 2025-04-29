@@ -26,69 +26,39 @@
 - (void)drawRect:(NSRect)dirtyRect {
     [super drawRect:dirtyRect];
     
-    // Fill background with white
-    [[NSColor whiteColor] setFill];
-    NSRectFill(self.bounds);
+    // Draw checkerboard pattern for transparency
+    [self drawTransparencyPatternInRect:self.bounds];
     
+    // Draw the main image if it exists
     if (self.image) {
-        // Draw the main image
-        [self.image drawInRect:self.bounds 
-                    fromRect:NSZeroRect 
-                    operation:NSCompositingOperationSourceOver 
-                    fraction:1.0 
-                    respectFlipped:YES 
-                    hints:nil];
+        [self.image drawInRect:self.bounds];
     }
     
-    // Draw the current stroke if we're in the middle of drawing
+    // Draw the current stroke preview
     if (self.isDrawing && self.currentStroke.count > 0) {
-        switch (self.currentTool) {
-            case PaintToolPencil: {
-                NSBezierPath *strokePath = [NSBezierPath bezierPath];
-                BOOL hasStarted = NO;
-                
-                for (NSValue *pointValue in self.currentStroke) {
-                    NSPoint point = [pointValue pointValue];
-                    
-                    // Only draw points that are within the canvas
-                    if ([self isPointInCanvas:point]) {
-                        if (!hasStarted) {
-                            [strokePath moveToPoint:point];
-                            hasStarted = YES;
-                        } else {
-                            [strokePath lineToPoint:point];
-                        }
-                    }
-                }
-                
-                [strokePath setLineWidth:self.lineWidth];
-                [self.drawingColor set];
-                [strokePath stroke];
-                break;
+        NSBezierPath *strokePath = [NSBezierPath bezierPath];
+        BOOL hasStarted = NO;
+        
+        for (NSValue *pointValue in self.currentStroke) {
+            NSPoint point = [pointValue pointValue];
+            if (!hasStarted) {
+                [strokePath moveToPoint:point];
+                hasStarted = YES;
+            } else {
+                [strokePath lineToPoint:point];
             }
-                
-            case PaintToolRectSelect: {
-                if (self.currentStroke.count == 2) {
-                    NSPoint start = [[self.currentStroke objectAtIndex:0] pointValue];
-                    NSPoint end = [[self.currentStroke objectAtIndex:1] pointValue];
-                    
-                    // Create rect from two points
-                    NSRect selectionRect = NSMakeRect(
-                        MIN(start.x, end.x),
-                        MIN(start.y, end.y),
-                        fabs(end.x - start.x),
-                        fabs(end.y - start.y)
-                    );
-                    
-                    // Draw dashed rectangle
-                    NSBezierPath *rectPath = [NSBezierPath bezierPathWithRect:selectionRect];
-                    CGFloat pattern[2] = {4.0, 4.0};
-                    [rectPath setLineDash:pattern count:2 phase:0.0];
-                    [[NSColor blackColor] set];
-                    [rectPath stroke];
-                }
-                break;
-            }
+        }
+        
+        [strokePath setLineWidth:self.lineWidth];
+        
+        if ([self.drawingColor isEqual:[NSColor clearColor]]) {
+            // Preview the eraser effect
+            [[NSColor lightGrayColor] set];
+            [strokePath setLineWidth:self.lineWidth * 2];
+            [strokePath stroke];
+        } else {
+            [self.drawingColor set];
+            [strokePath stroke];
         }
     }
 
@@ -335,21 +305,18 @@
 }
 
 - (void)commitCurrentStroke {
-    if (self.currentStroke.count == 0) return;
+    if (self.currentStroke.count < 2) return;
     
-    // Create an image context the same size as our view
-    NSSize size = self.bounds.size;
-    NSImage *newImage = [[NSImage alloc] initWithSize:size];
+    NSImage *newImage = [[NSImage alloc] initWithSize:self.bounds.size];
     [newImage lockFocus];
+    
+    // Set background to clear (not white) for transparency support
+    [[NSColor clearColor] set];
+    NSRectFill(self.bounds);
     
     // Draw existing image
     if (self.image) {
-        [self.image drawInRect:NSMakeRect(0, 0, size.width, size.height) 
-                    fromRect:NSZeroRect 
-                    operation:NSCompositingOperationSourceOver 
-                    fraction:1.0 
-                    respectFlipped:YES 
-                    hints:nil];
+        [self.image drawInRect:self.bounds];
     }
     
     // Draw the stroke
@@ -357,20 +324,35 @@
     NSPoint firstPoint = [[self.currentStroke firstObject] pointValue];
     [strokePath moveToPoint:firstPoint];
     
-    for (NSValue *pointValue in self.currentStroke) {
-        NSPoint point = [pointValue pointValue];
-        [strokePath lineToPoint:point];
+    for (NSValue *pointValue in [self.currentStroke subarrayWithRange:NSMakeRange(1, self.currentStroke.count - 1)]) {
+        [strokePath lineToPoint:[pointValue pointValue]];
     }
     
     [strokePath setLineWidth:self.lineWidth];
-    [self.drawingColor set];
-    [strokePath stroke];
+    
+    if ([self.drawingColor isEqual:[NSColor clearColor]]) {
+        // Create a temporary mask image
+        NSImage *maskImage = [[NSImage alloc] initWithSize:self.bounds.size];
+        [maskImage lockFocus];
+        [[NSColor blackColor] set];
+        [strokePath setLineWidth:self.lineWidth * 2]; // Make eraser slightly bigger
+        [strokePath stroke];
+        [maskImage unlockFocus];
+        
+        // Use the mask to clear pixels
+        [maskImage drawInRect:self.bounds
+                    fromRect:NSZeroRect
+                   operation:NSCompositingOperationDestinationOut
+                    fraction:1.0];
+    } else {
+        // Normal color drawing
+        [self.drawingColor set];
+        [strokePath stroke];
+    }
     
     [newImage unlockFocus];
     
     self.image = newImage;
-    
-    // Clear the current stroke
     [self.currentStroke removeAllObjects];
 }
 
@@ -499,6 +481,23 @@
 
 - (void)colorSelected:(NSColor *)color {
     self.drawingColor = color;
+}
+
+// Add this helper method to draw the transparency checkerboard
+- (void)drawTransparencyPatternInRect:(NSRect)rect {
+    CGFloat squareSize = 8.0;
+    
+    for (CGFloat y = rect.origin.y; y < NSMaxY(rect); y += squareSize) {
+        for (CGFloat x = rect.origin.x; x < NSMaxX(rect); x += squareSize) {
+            NSRect square = NSMakeRect(x, y, squareSize, squareSize);
+            if (((int)(x / squareSize) + (int)(y / squareSize)) % 2 == 0) {
+                [[NSColor lightGrayColor] set];
+            } else {
+                [[NSColor whiteColor] set];
+            }
+            NSRectFill(square);
+        }
+    }
 }
 
 @end 

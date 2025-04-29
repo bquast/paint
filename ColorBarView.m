@@ -2,6 +2,23 @@
 
 @implementation ColorBarView
 
+- (void)drawTransparencyPatternInRect:(NSRect)rect {
+    CGFloat squareSize = 8.0; // Size of each checker square
+    
+    // Create checkerboard pattern
+    for (CGFloat y = rect.origin.y; y < NSMaxY(rect); y += squareSize) {
+        for (CGFloat x = rect.origin.x; x < NSMaxX(rect); x += squareSize) {
+            NSRect square = NSMakeRect(x, y, squareSize, squareSize);
+            if (((int)(x / squareSize) + (int)(y / squareSize)) % 2 == 0) {
+                [[NSColor lightGrayColor] set];
+            } else {
+                [[NSColor whiteColor] set];
+            }
+            NSRectFill(square);
+        }
+    }
+}
+
 - (instancetype)initWithFrame:(NSRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
@@ -20,9 +37,9 @@
                 [NSColor darkGrayColor]
             ],
             
-            // Second row (brighter shades)
+            // Second row (brighter shades + transparent)
             @[
-                [NSColor whiteColor],
+                [NSColor clearColor],  // Transparent color (first position)
                 [NSColor redColor],
                 [NSColor orangeColor],
                 [NSColor yellowColor],
@@ -54,9 +71,14 @@
                                         colorWidth, 
                                         colorHeight);
             
-            // Draw color
-            [color set];
-            NSRectFill(colorRect);
+            // Special handling for transparent color
+            if ([color isEqual:[NSColor clearColor]]) {
+                [self drawTransparencyPatternInRect:colorRect];
+            } else {
+                // Draw color
+                [color set];
+                NSRectFill(colorRect);
+            }
             
             // Draw border
             [[NSColor lightGrayColor] set];
