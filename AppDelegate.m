@@ -111,7 +111,7 @@
     [fileMenu addItemWithTitle:@"Open..." action:@selector(openDocument:) keyEquivalent:@"o"];
     [fileMenu addItem:[NSMenuItem separatorItem]];
     [fileMenu addItemWithTitle:@"Close" action:@selector(performClose:) keyEquivalent:@"w"];
-    [fileMenu addItemWithTitle:@"Save" action:@selector(saveDocument:) keyEquivalent:@"s"]; // Placeholder
+    [fileMenu addItemWithTitle:@"Save" action:@selector(saveDocument:) keyEquivalent:@"s"];
     [fileMenu addItemWithTitle:@"Save As…" action:@selector(saveDocumentAs:) keyEquivalent:@"S"]; // Placeholder
     [fileMenu addItem:[NSMenuItem separatorItem]];
     [fileMenu addItemWithTitle:@"Page Setup…" action:@selector(runPageLayout:) keyEquivalent:@"P"]; // Might be useful later
@@ -169,18 +169,50 @@
 
 // Action method for "Save" (placeholder)
 - (IBAction)saveDocument:(id)sender {
-     if (self.currentFileURL) {
-         // TODO: Implement saving image data to self.currentFileURL
-         NSLog(@"Placeholder: Save to %@", self.currentFileURL);
-          NSAlert *alert = [[NSAlert alloc] init];
-          [alert setMessageText:@"Save Functionality Not Implemented"];
-          [alert setInformativeText:@"Saving the image is not yet supported."];
-          [alert addButtonWithTitle:@"OK"];
-          [alert beginSheetModalForWindow:self.window completionHandler:nil];
-     } else {
-         // If no current file URL, behave like Save As...
-         [self saveDocumentAs:sender];
-     }
+    if (!self.canvasView.image) {
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = @"Nothing to Save";
+        alert.informativeText = @"There is no image to save.";
+        [alert runModal];
+        return;
+    }
+    
+    NSSavePanel *savePanel = [NSSavePanel savePanel];
+    savePanel.allowedContentTypes = @[UTTypeJPEG, UTTypePNG];
+    savePanel.allowsOtherFileTypes = NO;
+    savePanel.canCreateDirectories = YES;
+    savePanel.title = @"Save Image";
+    
+    [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result) {
+        if (result == NSModalResponseOK) {
+            NSURL *fileURL = savePanel.URL;
+            NSString *pathExtension = fileURL.pathExtension.lowercaseString;
+            
+            // Get image data based on file type
+            NSData *imageData;
+            if ([pathExtension isEqualToString:@"jpg"] || 
+                [pathExtension isEqualToString:@"jpeg"]) {
+                imageData = [self.canvasView.image TIFFRepresentation];
+                NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:imageData];
+                imageData = [imageRep representationUsingType:NSBitmapImageFileTypeJPEG properties:@{}];
+            } else {
+                imageData = [self.canvasView.image TIFFRepresentation];
+                NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:imageData];
+                imageData = [imageRep representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
+            }
+            
+            // Write to file
+            if (imageData) {
+                NSError *error = nil;
+                if (![imageData writeToURL:fileURL options:NSDataWritingAtomic error:&error]) {
+                    NSAlert *alert = [[NSAlert alloc] init];
+                    alert.messageText = @"Save Failed";
+                    alert.informativeText = error.localizedDescription;
+                    [alert runModal];
+                }
+            }
+        }
+    }];
 }
 
 
@@ -356,6 +388,35 @@
 - (void)toolbarView:(id)toolbarView didSelectTool:(PaintTool)tool {
     NSLog(@"Selected tool: %ld", (long)tool);
     self.canvasView.currentTool = tool;  // Actually set the tool on the canvas
+}
+
+- (void)windowDidLoad {
+    // ... existing toolbar setup ...
+    
+    NSView *contentView = self.window.contentView;
+    NSRect contentBounds = contentView.bounds;
+    
+    // Create color bar at bottom
+    CGFloat colorBarHeight = 50;
+    NSRect colorBarFrame = NSMakeRect(0, 0, NSWidth(contentBounds), colorBarHeight);
+    self.colorBarView = [[ColorBarView alloc] initWithFrame:colorBarFrame];
+    self.colorBarView.delegate = self.canvasView;
+    self.colorBarView.autoresizingMask = NSViewWidthSizable | NSViewMaxYMargin;
+    
+    // Position canvas directly above color bar
+    CGFloat toolbarWidth = 80;
+    NSRect canvasFrame = NSMakeRect(
+        toolbarWidth,                                    // X: after toolbar
+        colorBarHeight,                                  // Y: just above color bar
+        NSWidth(contentBounds) - toolbarWidth,          // Width: remaining space
+        NSHeight(contentBounds) - colorBarHeight        // Height: remaining space
+    );
+    
+    self.canvasView.frame = canvasFrame;
+    self.canvasView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    
+    // Add views in correct order
+    [contentView addSubview:self.colorBarView];
 }
 
 @end
