@@ -26,40 +26,65 @@
 - (void)drawRect:(NSRect)dirtyRect {
     [super drawRect:dirtyRect];
     
-    // Draw checkerboard pattern for transparency
+    // Draw transparency pattern
     [self drawTransparencyPatternInRect:self.bounds];
     
-    // Draw the main image if it exists
+    // Draw the main image
     if (self.image) {
         [self.image drawInRect:self.bounds];
     }
     
     // Draw the current stroke preview
     if (self.isDrawing && self.currentStroke.count > 0) {
-        NSBezierPath *strokePath = [NSBezierPath bezierPath];
-        BOOL hasStarted = NO;
+        NSBezierPath *previewPath = [NSBezierPath bezierPath];
         
-        for (NSValue *pointValue in self.currentStroke) {
-            NSPoint point = [pointValue pointValue];
-            if (!hasStarted) {
-                [strokePath moveToPoint:point];
-                hasStarted = YES;
-            } else {
-                [strokePath lineToPoint:point];
+        switch (self.currentTool) {
+            case PaintToolPencil: {
+                // Existing pencil drawing code
+                BOOL hasStarted = NO;
+                for (NSValue *pointValue in self.currentStroke) {
+                    NSPoint point = [pointValue pointValue];
+                    if (!hasStarted) {
+                        [previewPath moveToPoint:point];
+                        hasStarted = YES;
+                    } else {
+                        [previewPath lineToPoint:point];
+                    }
+                }
+                [previewPath setLineWidth:self.lineWidth];
+                break;
             }
+                
+            case PaintToolRectangle: {
+                if (self.currentStroke.count == 2) {
+                    NSPoint startPoint = [[self.currentStroke firstObject] pointValue];
+                    NSPoint endPoint = [[self.currentStroke lastObject] pointValue];
+                    
+                    NSRect rectToDraw = NSMakeRect(
+                        MIN(startPoint.x, endPoint.x),
+                        MIN(startPoint.y, endPoint.y),
+                        fabs(endPoint.x - startPoint.x),
+                        fabs(endPoint.y - startPoint.y)
+                    );
+                    
+                    previewPath = [NSBezierPath bezierPathWithRect:rectToDraw];
+                }
+                [previewPath setLineWidth:self.lineWidth];
+                break;
+            }
+                
+            default:
+                break;
         }
         
-        [strokePath setLineWidth:self.lineWidth];
-        
+        // Draw the preview
         if ([self.drawingColor isEqual:[NSColor clearColor]]) {
-            // Preview the eraser effect
             [[NSColor lightGrayColor] set];
-            [strokePath setLineWidth:self.lineWidth * 2];
-            [strokePath stroke];
+            [previewPath setLineWidth:self.lineWidth * 2];
         } else {
             [self.drawingColor set];
-            [strokePath stroke];
         }
+        [previewPath stroke];
     }
 
     // Draw the selection content and rectangle
@@ -148,6 +173,10 @@
 - (void)mouseDown:(NSEvent *)event {
     NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
     
+    if (!self.isDrawing) {
+        self.currentStroke = [NSMutableArray array];
+    }
+    
     // If we're editing text and click elsewhere, commit it first
     if (self.isEditingText) {
         [self commitText];
@@ -170,6 +199,12 @@
     }
     
     switch (self.currentTool) {
+        case PaintToolRectangle:
+            [self.currentStroke removeAllObjects];
+            [self.currentStroke addObject:[NSValue valueWithPoint:point]];
+            self.isDrawing = YES;
+            break;
+            
         case PaintToolPencil:
             self.isDrawing = YES;
             [self.currentStroke removeAllObjects];
@@ -215,6 +250,15 @@
     if (!self.isDrawing) return;
     
     switch (self.currentTool) {
+        case PaintToolRectangle:
+            if (self.currentStroke.count > 0) {
+                if (self.currentStroke.count > 1) {
+                    [self.currentStroke removeLastObject];
+                }
+                [self.currentStroke addObject:[NSValue valueWithPoint:point]];
+            }
+            break;
+            
         case PaintToolPencil:
             [self.currentStroke addObject:[NSValue valueWithPoint:point]];
             break;
@@ -244,7 +288,14 @@
             [self commitCurrentStroke];
             break;
             
-        case PaintToolRectSelect: {
+        case PaintToolRectangle:
+            if (self.currentStroke.count == 1) {
+                [self.currentStroke addObject:[NSValue valueWithPoint:point]];
+            }
+            [self commitCurrentStroke];  // Always commit for rectangle
+            break;
+            
+        case PaintToolRectSelect:
             if (self.currentStroke.count == 2) {
                 NSPoint start = [[self.currentStroke objectAtIndex:0] pointValue];
                 NSPoint end = [[self.currentStroke objectAtIndex:1] pointValue];
@@ -297,7 +348,13 @@
                 }
             }
             break;
-        }
+            
+        case PaintToolText:
+            // ... existing text code ...
+            break;
+            
+        default:
+            break;
     }
     
     self.isDrawing = NO;
@@ -305,41 +362,64 @@
 }
 
 - (void)commitCurrentStroke {
-    if (self.currentStroke.count < 2) return;
+    if (self.currentStroke.count < 1) return;
     
     NSImage *newImage = [[NSImage alloc] initWithSize:self.bounds.size];
     [newImage lockFocus];
     
-    // Set background to clear (not white) for transparency support
+    // Draw existing content
     [[NSColor clearColor] set];
     NSRectFill(self.bounds);
-    
-    // Draw existing image
     if (self.image) {
         [self.image drawInRect:self.bounds];
     }
     
-    // Draw the stroke
     NSBezierPath *strokePath = [NSBezierPath bezierPath];
-    NSPoint firstPoint = [[self.currentStroke firstObject] pointValue];
-    [strokePath moveToPoint:firstPoint];
     
-    for (NSValue *pointValue in [self.currentStroke subarrayWithRange:NSMakeRange(1, self.currentStroke.count - 1)]) {
-        [strokePath lineToPoint:[pointValue pointValue]];
+    switch (self.currentTool) {
+        case PaintToolPencil: {
+            // Existing pencil commit code
+            NSPoint firstPoint = [[self.currentStroke firstObject] pointValue];
+            [strokePath moveToPoint:firstPoint];
+            
+            for (NSValue *pointValue in [self.currentStroke subarrayWithRange:NSMakeRange(1, self.currentStroke.count - 1)]) {
+                [strokePath lineToPoint:[pointValue pointValue]];
+            }
+            break;
+        }
+            
+        case PaintToolRectangle: {
+            if (self.currentStroke.count == 2) {
+                NSPoint startPoint = [[self.currentStroke firstObject] pointValue];
+                NSPoint endPoint = [[self.currentStroke lastObject] pointValue];
+                
+                NSRect rectToDraw = NSMakeRect(
+                    MIN(startPoint.x, endPoint.x),
+                    MIN(startPoint.y, endPoint.y),
+                    fabs(endPoint.x - startPoint.x),
+                    fabs(endPoint.y - startPoint.y)
+                );
+                
+                strokePath = [NSBezierPath bezierPathWithRect:rectToDraw];
+            }
+            break;
+        }
+            
+        default:
+            break;
     }
     
     [strokePath setLineWidth:self.lineWidth];
     
     if ([self.drawingColor isEqual:[NSColor clearColor]]) {
-        // Create a temporary mask image
+        // Handle eraser
         NSImage *maskImage = [[NSImage alloc] initWithSize:self.bounds.size];
         [maskImage lockFocus];
         [[NSColor blackColor] set];
-        [strokePath setLineWidth:self.lineWidth * 2]; // Make eraser slightly bigger
+        [strokePath setLineWidth:self.lineWidth * 2];
         [strokePath stroke];
         [maskImage unlockFocus];
         
-        // Use the mask to clear pixels
         [maskImage drawInRect:self.bounds
                     fromRect:NSZeroRect
                    operation:NSCompositingOperationDestinationOut
@@ -351,9 +431,9 @@
     }
     
     [newImage unlockFocus];
-    
     self.image = newImage;
     [self.currentStroke removeAllObjects];
+    self.isDrawing = NO;
 }
 
 // Add copy/paste support

@@ -36,6 +36,12 @@
                                                     tag:2];
     [buttons addObject:textButton];
     
+    // Rectangle Draw Tool Button
+    NSButton *rectButton = [self createToolButtonWithTitle:@"□" 
+                                                toolType:PaintToolRectangle 
+                                                    tag:3];
+    [buttons addObject:rectButton];
+    
     self.toolButtons = buttons;
     
     // Set initial state
