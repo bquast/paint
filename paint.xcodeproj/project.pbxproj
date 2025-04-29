@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		540C77192DC0CA6B00198372 /* LineWidthView.m in Sources */ = {isa = PBXBuildFile; fileRef = 540C77182DC0CA6B00198372 /* LineWidthView.m */; };
 		541B9FC12DBE2867001D2D91 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 541B9FBF2DBE281E001D2D91 /* Info.plist */; };
 		54A38B132DB79CEC008119EC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 54A38B122DB79CEC008119EC /* AppDelegate.m */; };
 		54A38B182DB79CED008119EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 54A38B172DB79CED008119EC /* Assets.xcassets */; };
@@ -17,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		540C77172DC0CA6B00198372 /* LineWidthView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LineWidthView.h; sourceTree = "<group>"; };
+		540C77182DC0CA6B00198372 /* LineWidthView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LineWidthView.m; sourceTree = "<group>"; };
 		541B9FBE2DBE279F001D2D91 /* paint.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = paint.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		541B9FBF2DBE281E001D2D91 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		54A38B112DB79CEC008119EC /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -59,6 +62,8 @@
 				54F549432DBF77FB00C04D1E /* ToolbarView.m */,
 				54C5E7382DBFE34700992699 /* ColorBarView.h */,
 				54C5E7392DBFE34700992699 /* ColorBarView.m */,
+				540C77172DC0CA6B00198372 /* LineWidthView.h */,
+				540C77182DC0CA6B00198372 /* LineWidthView.m */,
 			);
 			sourceTree = "<group>";
 		};
@@ -134,6 +139,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				54A38B1D2DB79CED008119EC /* main.m in Sources */,
+				540C77192DC0CA6B00198372 /* LineWidthView.m in Sources */,
 				54A38B132DB79CEC008119EC /* AppDelegate.m in Sources */,
 				54F549442DBF77FB00C04D1E /* ToolbarView.m in Sources */,
 				54E9A1E12DBF7387002E3A97 /* CanvasView.m in Sources */,

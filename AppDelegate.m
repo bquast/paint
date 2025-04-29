@@ -4,6 +4,7 @@
 #import "CanvasView.h"
 #import "ToolbarView.h"
 #import "ColorBarView.h"
+#import "LineWidthView.h"
 
 // Define keys for UserDefaults (if any needed later)
 // static NSString * const kSomeImageSettingKey = @"someImageSetting";
@@ -14,6 +15,7 @@
 @property (strong) NSWindow *window;
 @property (strong) CanvasView *canvasView;  // Change from NSImageView to CanvasView
 @property (strong) ColorBarView *colorBarView;
+@property (strong) LineWidthView *lineWidthView;  // Add this property
 @end
 
 @implementation AppDelegate
@@ -61,6 +63,21 @@
     // Add color bar to window
     [self.window.contentView addSubview:self.colorBarView];
 
+    // Create line width view (after toolbar setup)
+    NSRect lineWidthFrame = NSMakeRect(NSMaxX(toolbarFrame), 
+                                      colorBarFrame.size.height,
+                                      40, 
+                                      200);
+    self.lineWidthView = [[LineWidthView alloc] initWithFrame:lineWidthFrame];
+    self.lineWidthView.delegate = self.canvasView;
+    self.lineWidthView.autoresizingMask = NSViewMinXMargin | NSViewMaxYMargin;
+    [self.window.contentView addSubview:self.lineWidthView];
+    
+    // Adjust canvas frame to account for line width panel
+    canvasFrame.origin.x = NSMaxX(lineWidthFrame);
+    canvasFrame.size.width -= NSWidth(lineWidthFrame);
+    self.canvasView.frame = canvasFrame;
+    
     // --- Menu Setup ---
     [self createMainMenu]; // Create the application menu
 

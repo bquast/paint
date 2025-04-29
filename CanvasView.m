@@ -580,4 +580,8 @@
     }
 }
 
+- (void)lineWidthSelected:(CGFloat)width {
+    self.lineWidth = width;
+}
+
 @end 

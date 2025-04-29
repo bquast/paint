@@ -1,10 +1,11 @@
 #import <Cocoa/Cocoa.h>
 #import "ToolbarView.h"
 #import "ColorBarView.h"
+#import "LineWidthView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface CanvasView : NSView <ColorBarDelegate>
+@interface CanvasView : NSView <ColorBarDelegate, LineWidthViewDelegate>
 
 // The image being displayed and edited.
 @property (nonatomic, strong, nullable) NSImage *image;
